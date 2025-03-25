@@ -124,6 +124,7 @@ public class Reincarceration extends JavaPlugin implements IReincarcerationAPI {
 
                 // SimpleRegions listener
                 getServer().getPluginManager().registerEvents(new SimpleRegionsListener(this), this);
+                getServer().getPluginManager().registerEvents(new SweetBerryListener(this), this);
 
                 ConsoleUtil.sendSuccess("Reincarceration has been enabled!");
             } catch (SQLException e) {
