@@ -249,27 +249,200 @@ public class OreSicknessModifier extends AbstractModifier implements Listener {
         return point.subtract(planePoint).dot(planeNormal) >= 0;
     }
 
-    private boolean hasLineOfSight(Player player, Block block) {
+    private boolean hasOptimizedLineOfSight(Player player, Block block) {
         Location eyeLoc = player.getEyeLocation();
-        Location blockLoc = block.getLocation().add(0.5, 0.5, 0.5);
-        double distance = eyeLoc.distance(blockLoc);
+        Location blockLoc = block.getLocation();
+        Location blockCenter = blockLoc.clone().add(0.5, 0.5, 0.5);
 
         // For very close blocks, always return true
+        double distance = eyeLoc.distance(blockCenter);
         if (distance <= 2.0) {
             return true;
         }
 
-        Vector direction = blockLoc.toVector().subtract(eyeLoc.toVector()).normalize();
+        // Direction from block center to player's eyes
+        Vector directionToPlayer = eyeLoc.toVector().subtract(blockCenter.toVector()).normalize();
 
-    for (double d = 0; d < distance; d += lineOfSightStep) {
-            Location checkLoc = eyeLoc.clone().add(direction.clone().multiply(d));
-            Block checkBlock = checkLoc.getBlock();
+        // Determine visible faces based on direction vector
+        List<BlockFace> visibleFaces = new ArrayList<>();
 
-            if (checkBlock.equals(block)) return true;
-        if (checkBlock.getType().isOccluding() && !checkBlock.equals(block)) return false;
+        // Check which faces are potentially visible (max 3 faces)
+        if (directionToPlayer.getX() > 0) visibleFaces.add(BlockFace.WEST); // X- face
+        if (directionToPlayer.getX() < 0) visibleFaces.add(BlockFace.EAST); // X+ face
+        if (directionToPlayer.getY() > 0) visibleFaces.add(BlockFace.DOWN); // Y- face
+        if (directionToPlayer.getY() < 0) visibleFaces.add(BlockFace.UP);   // Y+ face
+        if (directionToPlayer.getZ() > 0) visibleFaces.add(BlockFace.NORTH); // Z- face
+        if (directionToPlayer.getZ() < 0) visibleFaces.add(BlockFace.SOUTH); // Z+ face
+
+        // Shortcut: if block center is visible, return true immediately
+        if (hasDirectLineOfSight(eyeLoc, blockCenter, block)) {
+            ConsoleUtil.sendDebug("Block center is directly visible");
+            return true;
         }
 
+        // Generate check points only for visible faces
+        List<Location> checkPoints = new ArrayList<>();
+
+        // First add face centers for quick checking
+        for (BlockFace face : visibleFaces) {
+            switch (face) {
+                case EAST:  checkPoints.add(blockLoc.clone().add(1, 0.5, 0.5)); break;
+                case WEST:  checkPoints.add(blockLoc.clone().add(0, 0.5, 0.5)); break;
+                case UP:    checkPoints.add(blockLoc.clone().add(0.5, 1, 0.5)); break;
+                case DOWN:  checkPoints.add(blockLoc.clone().add(0.5, 0, 0.5)); break;
+                case SOUTH: checkPoints.add(blockLoc.clone().add(0.5, 0.5, 1)); break;
+                case NORTH: checkPoints.add(blockLoc.clone().add(0.5, 0.5, 0)); break;
+            }
+        }
+
+        // Then add corners where visible faces intersect
+        boolean xMin = visibleFaces.contains(BlockFace.WEST);
+        boolean xMax = visibleFaces.contains(BlockFace.EAST);
+        boolean yMin = visibleFaces.contains(BlockFace.DOWN);
+        boolean yMax = visibleFaces.contains(BlockFace.UP);
+        boolean zMin = visibleFaces.contains(BlockFace.NORTH);
+        boolean zMax = visibleFaces.contains(BlockFace.SOUTH);
+
+        // Add corners (only where 2+ visible faces meet)
+        if (xMin && yMin && zMin) checkPoints.add(blockLoc.clone().add(0, 0, 0));
+        if (xMax && yMin && zMin) checkPoints.add(blockLoc.clone().add(1, 0, 0));
+        if (xMin && yMax && zMin) checkPoints.add(blockLoc.clone().add(0, 1, 0));
+        if (xMax && yMax && zMin) checkPoints.add(blockLoc.clone().add(1, 1, 0));
+        if (xMin && yMin && zMax) checkPoints.add(blockLoc.clone().add(0, 0, 1));
+        if (xMax && yMin && zMax) checkPoints.add(blockLoc.clone().add(1, 0, 1));
+        if (xMin && yMax && zMax) checkPoints.add(blockLoc.clone().add(0, 1, 1));
+        if (xMax && yMax && zMax) checkPoints.add(blockLoc.clone().add(1, 1, 1));
+
+        // Add edge midpoints where visible faces meet
+        if (xMin && yMin) checkPoints.add(blockLoc.clone().add(0, 0, 0.5));
+        if (xMax && yMin) checkPoints.add(blockLoc.clone().add(1, 0, 0.5));
+        if (xMin && yMax) checkPoints.add(blockLoc.clone().add(0, 1, 0.5));
+        if (xMax && yMax) checkPoints.add(blockLoc.clone().add(1, 1, 0.5));
+
+        if (xMin && zMin) checkPoints.add(blockLoc.clone().add(0, 0.5, 0));
+        if (xMax && zMin) checkPoints.add(blockLoc.clone().add(1, 0.5, 0));
+        if (xMin && zMax) checkPoints.add(blockLoc.clone().add(0, 0.5, 1));
+        if (xMax && zMax) checkPoints.add(blockLoc.clone().add(1, 0.5, 1));
+
+        if (yMin && zMin) checkPoints.add(blockLoc.clone().add(0.5, 0, 0));
+        if (yMax && zMin) checkPoints.add(blockLoc.clone().add(0.5, 1, 0));
+        if (yMin && zMax) checkPoints.add(blockLoc.clone().add(0.5, 0, 1));
+        if (yMax && zMax) checkPoints.add(blockLoc.clone().add(0.5, 1, 1));
+
+        // Check if any point is visible
+        for (Location pointLoc : checkPoints) {
+            if (hasDirectLineOfSight(eyeLoc, pointLoc, block)) {
+                ConsoleUtil.sendDebug("Block visible from optimized point at " +
+                        String.format("%.2f,%.2f,%.2f",
+                                pointLoc.getX(), pointLoc.getY(), pointLoc.getZ()));
+                return true;
+            }
+        }
+
+        // If no points are visible, try additional points on each visible face
+        // (Only if we need extra precision and are willing to sacrifice performance)
+        if (distance <= 8.0) { // Only do this extra check for closer blocks
+            for (BlockFace face : visibleFaces) {
+                // Add 4 additional check points per face (forming an X pattern on the face)
+                switch (face) {
+                    case EAST:
+                        checkPoints.add(blockLoc.clone().add(1, 0.25, 0.25));
+                        checkPoints.add(blockLoc.clone().add(1, 0.25, 0.75));
+                        checkPoints.add(blockLoc.clone().add(1, 0.75, 0.25));
+                        checkPoints.add(blockLoc.clone().add(1, 0.75, 0.75));
+                        break;
+                    case WEST:
+                        checkPoints.add(blockLoc.clone().add(0, 0.25, 0.25));
+                        checkPoints.add(blockLoc.clone().add(0, 0.25, 0.75));
+                        checkPoints.add(blockLoc.clone().add(0, 0.75, 0.25));
+                        checkPoints.add(blockLoc.clone().add(0, 0.75, 0.75));
+                        break;
+                    case UP:
+                        checkPoints.add(blockLoc.clone().add(0.25, 1, 0.25));
+                        checkPoints.add(blockLoc.clone().add(0.25, 1, 0.75));
+                        checkPoints.add(blockLoc.clone().add(0.75, 1, 0.25));
+                        checkPoints.add(blockLoc.clone().add(0.75, 1, 0.75));
+                        break;
+                    case DOWN:
+                        checkPoints.add(blockLoc.clone().add(0.25, 0, 0.25));
+                        checkPoints.add(blockLoc.clone().add(0.25, 0, 0.75));
+                        checkPoints.add(blockLoc.clone().add(0.75, 0, 0.25));
+                        checkPoints.add(blockLoc.clone().add(0.75, 0, 0.75));
+                        break;
+                    case SOUTH:
+                        checkPoints.add(blockLoc.clone().add(0.25, 0.25, 1));
+                        checkPoints.add(blockLoc.clone().add(0.25, 0.75, 1));
+                        checkPoints.add(blockLoc.clone().add(0.75, 0.25, 1));
+                        checkPoints.add(blockLoc.clone().add(0.75, 0.75, 1));
+                        break;
+                    case NORTH:
+                        checkPoints.add(blockLoc.clone().add(0.25, 0.25, 0));
+                        checkPoints.add(blockLoc.clone().add(0.25, 0.75, 0));
+                        checkPoints.add(blockLoc.clone().add(0.75, 0.25, 0));
+                        checkPoints.add(blockLoc.clone().add(0.75, 0.75, 0));
+                        break;
+                }
+            }
+
+            // Check the additional points
+            for (Location pointLoc : checkPoints) {
+                if (hasDirectLineOfSight(eyeLoc, pointLoc, block)) {
+                    ConsoleUtil.sendDebug("Block visible from additional point at " +
+                            String.format("%.2f,%.2f,%.2f",
+                                    pointLoc.getX(), pointLoc.getY(), pointLoc.getZ()));
+                    return true;
+                }
+            }
+        }
+
+        // If none of the points are visible, block is not visible
+        return false;
+    }
+
+    private boolean hasDirectLineOfSight(Location from, Location to, Block targetBlock) {
+        Vector direction = to.toVector().subtract(from.toVector());
+        double distance = direction.length();
+        direction.normalize();
+
+        // Adaptive step size - smaller steps for closer objects
+        double step = Math.min(0.2, distance / 10.0);
+        // Ensure minimum step size
+        step = Math.max(0.05, step);
+
+        for (double d = 0; d < distance; d += step) {
+            Location checkLoc = from.clone().add(direction.clone().multiply(d));
+            Block checkBlock = checkLoc.getBlock();
+
+            // If we hit our target block, we have line of sight to this point
+            if (checkBlock.equals(targetBlock)) {
+                return true;
+            }
+
+            // If we hit a different occluding block, no line of sight
+            if (!checkBlock.equals(targetBlock) && checkBlock.getType().isOccluding()) {
+                return false;
+            }
+        }
+
+        // If we've reached the end of our ray without hitting an occluding block
         return true;
+    }
+
+    /**
+     * Update the hasLineOfSight method to use the optimized version
+     */
+    private boolean hasLineOfSight(Player player, Block block) {
+        // For very close blocks, always return true
+        Location eyeLoc = player.getEyeLocation();
+        Location blockLoc = block.getLocation().add(0.5, 0.5, 0.5);
+        double distance = eyeLoc.distance(blockLoc);
+
+        if (distance <= 1.5) {
+            return true;
+        }
+
+        // Use the optimized line of sight detection
+        return hasOptimizedLineOfSight(player, block);
     }
 
 
