@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'org.kif'
-version = '1.2.9'
+version = '1.2.10'
 
 def javaVersion = JavaVersion.VERSION_21
 def encoding = 'UTF-8'
