@@ -29,8 +29,8 @@ repositories {
         name = "papermc"
         url = "https://repo.papermc.io/repository/maven-public/"
     }
-    maven { 
-        url 'https://jitpack.io' 
+    maven {
+        url 'https://jitpack.io'
     }
     maven {
         name = "CodeMC"
@@ -54,9 +54,9 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.34'
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
-    implementation "co.killionrevival:killioncommons:4.1.1-SNAPSHOT"
-    implementation "co.killionrevival:curiosities:1.3.1"
-    implementation "com.flyerzrule.mc.customtags:customtags:1.4.2"
+    implementation "co.killionrevival:killioncommons:4.3"
+    implementation "co.killionrevival:curiosities:1.5.3"
+    implementation "com.flyerzrule.mc.customtags:customtags:1.8.2"
     implementation "net.luckperms:api:5.4"
     implementation "com.github.drtshock:PlayerVaults:4.2.15"
     implementation "com.github.Gypopo:EconomyShopGUI-API:1.7.3"
@@ -65,18 +65,12 @@ dependencies {
     implementation "moe.krp:SimpleRegions:1.3.10"
     implementation "net.kyori:adventure-api:4.11.0"
 
-    // Replace Vault with CoinsEngine, excluding conflicting dependencies
     compileOnly("su.nightexpress.coinsengine:CoinsEngine:2.4.1") {
         exclude group: 'org.spigotmc', module: 'spigot-api'
         exclude group: 'io.papermc.paper', module: 'paper-api'
         exclude group: 'org.bukkit', module: 'bukkit'
         exclude group: 'org.bukkit', module: 'craftbukkit'
     }
-
-    // Remove Vault dependency
-    // implementation ("com.github.MilkBowl:VaultAPI:1.7.1") {
-    //    exclude group: 'org.bukkit', module: 'bukkit'
-    // }
 }
 
 configurations.configureEach {
