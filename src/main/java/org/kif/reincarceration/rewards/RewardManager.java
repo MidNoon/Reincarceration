@@ -12,15 +12,11 @@ import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.util.RewardUtil;
 
-import java.io.Console;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class RewardManager {
     private final EconomyModule economyModule;

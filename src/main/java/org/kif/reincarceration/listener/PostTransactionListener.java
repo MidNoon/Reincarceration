@@ -68,9 +68,6 @@ public class PostTransactionListener implements Listener {
             if (result == Transaction.Result.SUCCESS || result == Transaction.Result.SUCCESS_COMMANDS_EXECUTED) {
                 ConsoleUtil.sendDebug("Processing purchase: " + boughtItem.getType() + " x" + amount);
 
-                // Apply the flag directly to the bought item
-//                ItemUtil.addReincarcerationFlag(boughtItem);
-//                ConsoleUtil.sendDebug("Applied flag to purchased item: " + boughtItem.getType() + " x" + amount);
             } else {
                 ConsoleUtil.sendDebug("Transaction was not successful. Result: " + result);
             }

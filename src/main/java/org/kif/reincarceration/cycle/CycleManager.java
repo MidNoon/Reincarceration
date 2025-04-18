@@ -86,7 +86,6 @@ public class CycleManager {
                 dataManager.setPlayerCycleStatus(player, true);
                 rankManager.setPlayerRank(player, 0);
                 dataManager.setStoredBalance(player, storedBalance);
-//                economyManager.setBalance(player, BigDecimal.ZERO);
 
                 // Remove player from completion groups
                 permissionManager.removeFromCompletionGroups(player);

@@ -9,7 +9,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -17,19 +16,15 @@ import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.core.CoreModule;
 import org.kif.reincarceration.cycle.CycleManager;
 import org.kif.reincarceration.cycle.CycleModule;
-import org.kif.reincarceration.data.DataModule;
 import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.modifier.core.ModifierManager;
 import org.kif.reincarceration.modifier.core.ModifierModule;
 import org.kif.reincarceration.rank.RankManager;
 import org.kif.reincarceration.config.ConfigManager;
 import org.kif.reincarceration.rank.RankModule;
-import org.kif.reincarceration.util.MessageUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 public class GUIListener implements Listener {
     private final Reincarceration plugin;

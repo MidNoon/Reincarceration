@@ -1,9 +1,7 @@
 package org.kif.reincarceration.util;
 
 import co.killionrevival.killioncommons.util.TextFormatUtil;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.config.ConfigManager;

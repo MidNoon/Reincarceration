@@ -2,7 +2,6 @@ package org.kif.reincarceration.modifier.types;
 
 import me.gypopo.economyshopgui.api.events.PreTransactionEvent;
 import me.gypopo.economyshopgui.objects.ShopItem;
-import me.gypopo.economyshopgui.util.Transaction;
 import org.bukkit.*;
 import org.bukkit.block.*;
 import org.bukkit.configuration.ConfigurationSection;
@@ -23,7 +22,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class AnglerModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
-    // Separated config settings for clarity
     private boolean provideRodOnApply, provideRodOnDeath, preventRodDurabilityLoss;
     private final Set<Material> allowedItems = new HashSet<>();
     private final Map<Material,Integer> disallowedSwapItems = new EnumMap<>(Material.class);

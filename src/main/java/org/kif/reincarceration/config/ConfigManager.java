@@ -1,8 +1,5 @@
 package org.kif.reincarceration.config;
 
-import co.killionrevival.killioncommons.util.TextFormatUtil;
-import net.kyori.adventure.text.Component;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;

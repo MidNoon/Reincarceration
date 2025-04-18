@@ -1,5 +1,6 @@
 package org.kif.reincarceration.modifier.core;
 
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -13,6 +14,7 @@ import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.sql.SQLException;
 
+@Getter
 public class ModifierModule implements Module {
     private final Reincarceration plugin;
     private ModifierManager modifierManager;
@@ -68,7 +70,6 @@ public class ModifierModule implements Module {
             if (modifiersConfig.getBoolean("decrepit.enabled", true)) {
                 DecrepitModifier decrepitModifier = new DecrepitModifier(plugin);
                 modifierRegistry.registerModifier(decrepitModifier);
-//                plugin.getServer().getPluginManager().registerEvents(decrepitModifier, plugin);
             }
             if (modifiersConfig.getBoolean("tortoise.enabled", true)) {
                 TortoiseModifier tortoiseModifier = new TortoiseModifier(plugin);
@@ -93,7 +94,6 @@ public class ModifierModule implements Module {
             if (modifiersConfig.getBoolean("gambler.enabled", true)) {
                 GamblerModifier gamblerModifier = new GamblerModifier(plugin);
                 modifierRegistry.registerModifier(gamblerModifier);
-                //plugin.getServer().getPluginManager().registerEvents(gamblerModifier, plugin);
             }
         }
     }
@@ -113,15 +113,4 @@ public class ModifierModule implements Module {
         }
     }
 
-    public ModifierManager getModifierManager() {
-        return modifierManager;
-    }
-
-    public ModifierRegistry getModifierRegistry() {
-        return modifierRegistry;
-    }
-
-    public Reincarceration getPlugin() {
-        return plugin;
-    }
 }

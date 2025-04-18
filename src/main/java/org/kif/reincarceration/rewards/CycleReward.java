@@ -2,7 +2,6 @@ package org.kif.reincarceration.rewards;
 
 import lombok.Data;
 import lombok.ToString;
-import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.List;

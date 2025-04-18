@@ -20,12 +20,10 @@ public class CompleteCycleCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label,
             String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             ConsoleUtil.sendError("Command can only be executed by a player.");
             return true;
         }
-
-        Player player = (Player) sender;
 
         if (!player.hasPermission("reincarceration.completecycle")) {
             MessageUtil.sendPrefixMessage(player, "&cInsufficent Permissions");

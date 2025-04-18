@@ -54,12 +54,10 @@ public class RewardCommand implements CommandExecutor {
      */
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             ConsoleUtil.sendError("This command can only be executed by a player.");
             return true;
         }
-
-        Player player = (Player) sender;
 
         if (!player.hasPermission("reincarceration.admin.reward")) {
             MessageUtil.sendPrefixMessage(player, "&cYou don't have permission to use this command.");

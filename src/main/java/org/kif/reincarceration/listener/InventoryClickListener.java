@@ -27,7 +27,6 @@ public class InventoryClickListener implements Listener {
             return;
         }
 
-
         Player player = (Player) event.getWhoClicked();
 
         if (player.isOp()) return;

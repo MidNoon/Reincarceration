@@ -1,5 +1,6 @@
 package org.kif.reincarceration.core;
 
+import lombok.Getter;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.config.ConfigManager;
 import org.kif.reincarceration.util.ConsoleUtil;
@@ -97,6 +98,7 @@ public class ModuleManager {
         sortedModules.add(moduleClass);
     }
 
+    @Getter
     private static class ModuleInfo {
         private final org.kif.reincarceration.core.Module module;
         private final Class<? extends org.kif.reincarceration.core.Module>[] dependencies;
@@ -106,18 +108,6 @@ public class ModuleManager {
             this.module = module;
             this.dependencies = dependencies;
             this.state = ModuleState.REGISTERED;
-        }
-
-        public org.kif.reincarceration.core.Module getModule() {
-            return module;
-        }
-
-        public Class<? extends org.kif.reincarceration.core.Module>[] getDependencies() {
-            return dependencies;
-        }
-
-        public ModuleState getState() {
-            return state;
         }
 
         public void setState(ModuleState state) {

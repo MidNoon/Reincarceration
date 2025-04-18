@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.data.DataManager;
 import org.kif.reincarceration.data.DataModule;
@@ -26,7 +27,7 @@ public class ViewPlayerDataCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         Player player = (Player) sender;
 
         if (!sender.isOp() && !sender.hasPermission("reincarceration.admin.viewplayerdata")) {

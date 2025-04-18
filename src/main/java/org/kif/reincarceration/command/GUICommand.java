@@ -31,7 +31,6 @@ public class GUICommand implements CommandExecutor {
         this.economyManager = economyModule.getEconomyManager();
         this.cycleManager = cycleModule.getCycleManager();
         this.guiModule = guiModule;
-
     }
 
     @Override

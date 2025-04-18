@@ -6,6 +6,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
@@ -25,7 +26,7 @@ public class InspectInventoryCommand implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
         if (!sender.isOp() && !sender.hasPermission("reincarceration.admin.inspectinventory")) {
             MessageUtil.sendPrefixMessage((Player) sender, "&cYou don't have permission to use this command.");
             return true;
