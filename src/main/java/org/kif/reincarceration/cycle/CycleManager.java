@@ -20,7 +20,6 @@ import org.kif.reincarceration.util.VaultUtil;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
 
 public class CycleManager {

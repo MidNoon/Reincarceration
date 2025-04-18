@@ -10,23 +10,18 @@ public class CoreModule implements Module {
 
     public CoreModule(Reincarceration plugin) {
         this.plugin = plugin;
-        // Initialize configuration immediately
         plugin.saveDefaultConfig();
         this.configManager = new ConfigManager(plugin, plugin.getConfig());
     }
 
     @Override
     public void onEnable() {
-        // Initialize other core components here
-        // Initialize console utility
         ConsoleUtil.initialize(this.plugin);
-
         ConsoleUtil.sendSuccess("Core Module enabled");
     }
 
     @Override
     public void onDisable() {
-        // Perform any necessary cleanup
         ConsoleUtil.sendSuccess("Core Module disabled");
     }
 

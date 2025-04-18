@@ -8,7 +8,6 @@ import org.kif.reincarceration.util.ConsoleUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.UUID;
 
 public class EconomyManager {
     private final EconomyModule economyModule;

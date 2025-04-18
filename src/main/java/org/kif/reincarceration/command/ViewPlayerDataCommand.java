@@ -89,29 +89,5 @@ public class ViewPlayerDataCommand implements CommandExecutor {
                 MessageUtil.sendPrefixMessage(player, "&f  - " + modifier);
             }
         }
-
-//        // Cycle History
-//        List<CycleHistoryEntry> cycleHistory = dataManager.getCycleHistory(player);
-//        MessageUtil.sendPrefixMessage(player, "&7Cycle History:");
-//        if (cycleHistory.isEmpty()) {
-//            MessageUtil.sendPrefixMessage(player, "&f  No cycle history");
-//        } else {
-//            for (CycleHistoryEntry entry : cycleHistory) {
-//                MessageUtil.sendPrefixMessage(player, "&f  - Modifier: " + entry.getModifierId() +
-//                        ", Start: " + entry.getStartTime() +
-//                        ", End: " + (entry.getEndTime() != null ? entry.getEndTime() : "Ongoing") +
-//                        ", Completed: " + (entry.isCompleted() ? "Yes" : "No"));
-//            }
-//        }
     }
-
-//    // You might need to create this class based on your database structure
-//    private static class CycleHistoryEntry {
-//        private String modifierId;
-//        private String startTime;
-//        private String endTime;
-//        private boolean completed;
-//
-//        // Constructor, getters, and setters
-//    }
 }

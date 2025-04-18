@@ -134,7 +134,6 @@ public class ImmolationModifier extends AbstractModifier implements Listener {
     public void onPlayerRespawn(PlayerRespawnEvent event) {
         Player player = event.getPlayer();
         if (isActive(player)) {
-            // Use a delayed task to ensure the item is given after respawn
             new BukkitRunnable() {
                 @Override
                 public void run() {

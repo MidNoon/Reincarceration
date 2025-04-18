@@ -7,13 +7,8 @@ import com.sk89q.worldguard.protection.ApplicableRegionSet;
 import com.sk89q.worldguard.protection.flags.Flags;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Container;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -29,8 +24,7 @@ import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.modifier.core.ModifierManager;
 import org.kif.reincarceration.util.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.SQLException;
 
 public class BlockBreakListener implements Listener {
     private final Reincarceration plugin;
@@ -75,7 +69,7 @@ public class BlockBreakListener implements Listener {
 
             // Check if the block is a snow block
             if (block.getType() == Material.SNOW_BLOCK) {
-                handleSnowBlockBreak(event);
+                BlockBreakUtil.handleSnowBlockBreak(event, plugin);
                 return;
             }
 
@@ -102,33 +96,13 @@ public class BlockBreakListener implements Listener {
                 }
 
                 // If we get here, either there was no active modifier or it didn't handle the event
-                handleDefaultBreak(event);
+                BlockBreakUtil.handleBlockBreak(event, player, block, plugin);
 
-            } catch (Exception e) {
+            } catch (SQLException e) {
                 ConsoleUtil.sendError("Error handling block break: " + e.getMessage());
                 event.setCancelled(true);
             }
         }
-    }
-
-    private void handleSnowBlockBreak(BlockBreakEvent event) {
-        event.setCancelled(true);  // Cancel the original event
-        final Block block = event.getBlock();
-        final Player player = event.getPlayer();
-        final Location location = block.getLocation();
-
-        // Create a flagged snow block item
-        final ItemStack snowBlock = new ItemStack(Material.SNOW_BLOCK);
-        ItemUtil.addReincarcerationFlag(snowBlock);
-
-        // Set the block to air (break it)
-        block.setType(Material.AIR);
-
-        // Drop the flagged snow block with delay
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            block.getWorld().dropItem(location.add(0.5, 0.5, 0.5), snowBlock);
-            ConsoleUtil.sendDebug("Dropped flagged snow block for player: " + player.getName());
-        }, 3L);
     }
 
     private boolean canBreakBlock(Player player, Block block) {
@@ -147,90 +121,5 @@ public class BlockBreakListener implements Listener {
         boolean canBreak = query.testState(loc, localPlayer, Flags.BLOCK_BREAK);
         ConsoleUtil.sendDebug("WorldGuard check for " + player.getName() + " at " + block.getLocation() + ": canBreak = " + canBreak);
         return canBreak;
-    }
-
-    private void handleDefaultBreak(BlockBreakEvent event) {
-        final Block block = event.getBlock();
-        final Player player = event.getPlayer();
-        final Material blockType = block.getType();
-        final Location dropLocation = block.getLocation().add(0.5, 0.5, 0.5);
-        final ItemStack tool = player.getInventory().getItemInMainHand();
-
-        // Cancel normal drops
-        event.setDropItems(false);
-
-        // Handle special cases first
-        if (handleSpecialCases(event)) {
-            return; // If it was a special case, we're done
-        }
-
-        // If not a special case, schedule drops for next tick
-        final List<ItemStack> drops = new ArrayList<>(block.getDrops(tool));
-
-        // Schedule the drop for 1 tick later, after the block is broken
-        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            for (ItemStack drop : drops) {
-                ItemUtil.addReincarcerationFlag(drop);
-
-                block.getWorld().dropItem(block.getLocation().add(0.5, 0.5, 0.5), drop);
-
-                ConsoleUtil.sendDebug("Dropped flagged block item: " + drop.getType().name());
-            }
-        }, 3L); // 1 tick delay
-        // Handle container contents
-        handleContainerContents(block);
-    }
-
-    private boolean handleSpecialCases(BlockBreakEvent event) {
-        Block block = event.getBlock();
-        if (block.getType() == Material.CACTUS || block.getType() == Material.SUGAR_CANE) {
-            if (!event.isCancelled()) {
-                breakConnectedBlocks(block, block.getType(), event.getPlayer());
-                return true; // We've handled this special case
-            } else {
-                ConsoleUtil.sendDebug("Block break was cancelled. Not handling connected blocks for " + block.getType());
-            }
-        }
-        return false; // Not a special case
-    }
-
-    private void breakConnectedBlocks(Block startBlock, Material material, Player player) {
-        List<Block> connectedBlocks = new ArrayList<>();
-        connectedBlocks.add(startBlock);
-
-        Block above = startBlock.getRelative(BlockFace.UP);
-        while (above.getType() == material && connectedBlocks.size() < 3) {
-            connectedBlocks.add(above);
-            above = above.getRelative(BlockFace.UP);
-        }
-
-        // Drop items for all connected blocks
-        for (Block block : connectedBlocks) {
-            dropFlaggedItem(block.getLocation(), material, player);
-            block.setType(Material.AIR);
-        }
-
-        ConsoleUtil.sendDebug("Broke and dropped " + connectedBlocks.size() + " connected " + material.name() + " blocks");
-    }
-
-    private void dropFlaggedItem(org.bukkit.Location location, Material material, Player player) {
-        ItemStack drop = new ItemStack(material);
-        ItemUtil.addReincarcerationFlag(drop);
-        player.getWorld().dropItemNaturally(location, drop);
-        ConsoleUtil.sendDebug("Dropped flagged item: " + material.name());
-    }
-
-    private void handleContainerContents(Block block) {
-        if (block.getState() instanceof Container) {
-            Container container = (Container) block.getState();
-            for (ItemStack item : container.getInventory().getContents()) {
-                if (item != null && !item.getType().isAir()) {
-                    block.getWorld().dropItemNaturally(block.getLocation(), item);
-                    ConsoleUtil.sendDebug("Dropped container item: " + item.getType().name() +
-                            ", Flagged: " + ItemUtil.hasReincarcerationFlag(item));
-                }
-            }
-            container.getInventory().clear();
-        }
     }
 }

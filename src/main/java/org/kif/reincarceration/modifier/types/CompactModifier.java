@@ -7,15 +7,11 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
-import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.inventory.ItemStack;
@@ -29,18 +25,14 @@ import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.MessageUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class CompactModifier extends AbstractModifier implements Listener {
     private final Reincarceration plugin;
     private int allowedInventorySlots;
     private int allowedHotbarSlots;
     private static final int HOTBAR_SIZE = 9;
-    private static final int PLAYER_INVENTORY_SIZE = 36; // 27 main inventory + 9 hotbar
+    private static final int PLAYER_INVENTORY_SIZE = 36;
     private ItemStack restrictedSlotItem;
 
     public CompactModifier(Reincarceration plugin) {
@@ -84,7 +76,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = (Player) event.getWhoClicked();
         if (!isActive(player)) return;
 
-        // If clicking on a dead bush, cancel the event
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem != null && clickedItem.getType() == Material.DEAD_BUSH) {
             event.setCancelled(true);
@@ -97,7 +88,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = (Player) event.getWhoClicked();
         if (!isActive(player)) return;
 
-        // Check if any dragged slots contain our special dead bushes
         for (Integer slot : event.getRawSlots()) {
             ItemStack item = player.getOpenInventory().getItem(slot);
             if (item != null && item.getType() == Material.DEAD_BUSH) {
@@ -112,10 +102,8 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = event.getEntity();
         if (!isActive(player)) return;
 
-        // Remove all dead bushes from drops
         event.getDrops().removeIf(item -> item != null && item.getType() == Material.DEAD_BUSH);
 
-        // Also clean player inventory directly to be safe
         PlayerInventory inventory = player.getInventory();
         for (int i = 0; i < inventory.getSize(); i++) {
             ItemStack item = inventory.getItem(i);
@@ -131,11 +119,9 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = (Player) event.getEntity();
         if (!isActive(player)) return;
 
-        // Prevent picking up any dead bushes
         ItemStack item = event.getItem().getItemStack();
         if (item.getType() == Material.DEAD_BUSH) {
             event.setCancelled(true);
-            // Remove the item to prevent spam attempts
             event.getItem().remove();
         }
     }
@@ -145,7 +131,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
         Player player = event.getPlayer();
         if (!isActive(player)) return;
 
-        // Re-apply dead bushes after respawn
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -157,7 +142,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
     private void fillRestrictedSlots(Player player) {
         PlayerInventory inventory = player.getInventory();
 
-        // Fill hotbar restricted slots
         for (int i = allowedHotbarSlots; i < HOTBAR_SIZE; i++) {
             ItemStack item = inventory.getItem(i);
             if (isNormalItem(item)) {
@@ -166,7 +150,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
             inventory.setItem(i, restrictedSlotItem.clone());
         }
 
-        // Fill main inventory restricted slots
         for (int i = HOTBAR_SIZE; i < PLAYER_INVENTORY_SIZE - allowedInventorySlots; i++) {
             ItemStack item = inventory.getItem(i);
             if (isNormalItem(item)) {
@@ -178,11 +161,10 @@ public class CompactModifier extends AbstractModifier implements Listener {
 
     private boolean isNormalItem(ItemStack item) {
         return item != null && item.getType() != Material.AIR &&
-               item.getType() != Material.DEAD_BUSH; // Any dead bush is non-normal
+               item.getType() != Material.DEAD_BUSH;
     }
 
     private void dropOrMoveItem(Player player, ItemStack item) {
-        // Try to move the item to an allowed slot, or drop it
         if (!tryMoveToAllowedSlot(player, item)) {
             player.getWorld().dropItemNaturally(player.getLocation(), item);
             MessageUtil.sendPrefixMessage(player, "&cItem dropped: Not enough space in allowed slots");
@@ -192,7 +174,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
     private boolean tryMoveToAllowedSlot(Player player, ItemStack item) {
         PlayerInventory inventory = player.getInventory();
 
-        // Try hotbar first
         for (int i = 0; i < allowedHotbarSlots; i++) {
             if (inventory.getItem(i) == null || inventory.getItem(i).getType() == Material.AIR) {
                 inventory.setItem(i, item);
@@ -200,7 +181,6 @@ public class CompactModifier extends AbstractModifier implements Listener {
             }
         }
 
-        // Then try main inventory
         int startSlot = PLAYER_INVENTORY_SIZE - allowedInventorySlots;
         for (int i = startSlot; i < PLAYER_INVENTORY_SIZE; i++) {
             if (inventory.getItem(i) == null || inventory.getItem(i).getType() == Material.AIR) {
@@ -222,27 +202,15 @@ public class CompactModifier extends AbstractModifier implements Listener {
         }
     }
 
-    private void removeAllDeadBushes(Player player) {
-        PlayerInventory inventory = player.getInventory();
-        for (int i = 0; i < inventory.getSize(); i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item != null && item.getType() == Material.DEAD_BUSH) {
-                inventory.setItem(i, null);
-            }
-        }
-    }
-
     private ItemStack createRestrictedSlotItem() {
         ItemStack deadBush = new ItemStack(Material.DEAD_BUSH);
         ItemMeta meta = deadBush.getItemMeta();
 
-        // Create display name component with Adventure API
         Component displayName = Component.text("Restricted Slot")
                 .color(TextColor.color(0xFF5555))
                 .decoration(TextDecoration.ITALIC, false);
         meta.displayName(displayName);
 
-        // Create lore components with Adventure API
         List<Component> lore = new ArrayList<>();
         lore.add(Component.text("This slot is restricted by the Compact modifier")
                 .color(TextColor.color(0xAAAAAA))
@@ -264,7 +232,7 @@ public class CompactModifier extends AbstractModifier implements Listener {
                 }
                 fillRestrictedSlots(player);
             }
-        }.runTaskTimer(plugin, 20L * 30, 20L * 30); // Check every 30 seconds
+        }.runTaskTimer(plugin, 20L * 30, 20L * 30);
     }
 
     @Override

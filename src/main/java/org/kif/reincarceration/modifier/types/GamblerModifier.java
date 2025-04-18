@@ -103,7 +103,6 @@ public class GamblerModifier extends AbstractModifier implements Listener {
             }
         }
 
-        // Additional random effects on any damage
         double effect = random.nextDouble();
         if (effect < 0.3) {
             double newDamage = event.getDamage() * 2;

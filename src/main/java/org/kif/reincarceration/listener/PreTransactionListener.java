@@ -17,7 +17,6 @@ import org.kif.reincarceration.util.MessageUtil;
 import org.kif.reincarceration.permission.PermissionManager;
 
 import java.sql.SQLException;
-import java.util.Objects;
 
 public class PreTransactionListener implements Listener {
     private final Reincarceration plugin;

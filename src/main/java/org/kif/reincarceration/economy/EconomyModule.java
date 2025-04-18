@@ -14,7 +14,6 @@ public class EconomyModule implements Module {
 
     public EconomyModule(Reincarceration plugin) {
         this.plugin = plugin;
-        // Load currency ID from config
         this.configuredCurrencyId = plugin.getConfig().getString("economy.coins-engine.currency-id", "money");
     }
 

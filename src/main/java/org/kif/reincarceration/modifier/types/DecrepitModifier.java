@@ -3,13 +3,8 @@ package org.kif.reincarceration.modifier.types;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.kif.reincarceration.Reincarceration;
-import org.kif.reincarceration.cycle.CycleManager;
-import org.kif.reincarceration.cycle.CycleModule;
 import org.kif.reincarceration.modifier.core.AbstractModifier;
 import org.kif.reincarceration.util.ConsoleUtil;
 
@@ -42,8 +37,8 @@ public class DecrepitModifier extends AbstractModifier implements Listener {
         AttributeInstance attribute = player.getAttribute(Attribute.MAX_HEALTH);
         if (attribute != null) {
             double oldValue = attribute.getBaseValue();
-            attribute.setBaseValue(maxHearts * 2); // Each heart is 2 health points
-            player.setHealth(attribute.getValue()); // Set current health to new max
+            attribute.setBaseValue(maxHearts * 2);
+            player.setHealth(attribute.getValue());
             ConsoleUtil.sendDebug("Set max health for " + player.getName() + " from " + oldValue + " to " + attribute.getBaseValue());
         } else {
             ConsoleUtil.sendDebug("Failed to set max health for " + player.getName() + ": Attribute is null");
@@ -54,8 +49,8 @@ public class DecrepitModifier extends AbstractModifier implements Listener {
         AttributeInstance attribute = player.getAttribute(Attribute.MAX_HEALTH);
         if (attribute != null) {
             double oldValue = attribute.getBaseValue();
-            attribute.setBaseValue(20); // Reset to default 10 hearts (20 health points)
-            player.setHealth(attribute.getValue()); // Set current health to new max
+            attribute.setBaseValue(20);
+            player.setHealth(attribute.getValue());
             ConsoleUtil.sendDebug("Reset max health for " + player.getName() + " from " + oldValue + " to " + attribute.getBaseValue());
         } else {
             ConsoleUtil.sendDebug("Failed to reset max health for " + player.getName() + ": Attribute is null");

@@ -1,7 +1,5 @@
 package org.kif.reincarceration.modifier.types;
 
-import org.bukkit.attribute.Attribute;
-import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,7 +34,6 @@ public class HardcoreModifier extends AbstractModifier implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onEntityDeath(EntityDeathEvent event) {
-//        ConsoleUtil.sendDebug("EntityDeathEvent triggered");
         if (event.getEntity() instanceof Player) {
             Player player = (Player) event.getEntity();
             ConsoleUtil.sendDebug("Dead entity is a player: " + player.getName());
@@ -59,9 +56,6 @@ public class HardcoreModifier extends AbstractModifier implements Listener {
             } else {
                 ConsoleUtil.sendDebug("Hardcore modifier not active for " + player.getName() + ". No action taken.");
             }
-        } else {
-            String hello = "hello";
-//            ConsoleUtil.sendDebug("Dead entity is not a player. Entity type: " + event.getEntityType());
         }
     }
 

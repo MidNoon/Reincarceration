@@ -1,10 +1,8 @@
 package org.kif.reincarceration.listener;
 
-import org.bukkit.block.BlastFurnace;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Furnace;
-import org.bukkit.block.Smoker;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

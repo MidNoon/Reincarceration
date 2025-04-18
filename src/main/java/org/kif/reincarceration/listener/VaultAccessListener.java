@@ -47,7 +47,7 @@ public class VaultAccessListener implements Listener {
         String locationKey = getLocationKey(block);
         int vaultNumber = getChestNumberFromSign(locationKey);
 
-        if (vaultNumber == -1) return; // Not a PlayerVault sign
+        if (vaultNumber == -1) return;
 
         int reoffenderVaultNumber = configManager.getReoffenderVaultNumber();
         boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
@@ -59,7 +59,6 @@ public class VaultAccessListener implements Listener {
 
             IModifier activeModifier = modifierManager.getActiveModifier(player);
             if (activeModifier != null && activeModifier.handleVaultAccess(event)) {
-                // The modifier handled the event, so we're done
                 return;
             }
 

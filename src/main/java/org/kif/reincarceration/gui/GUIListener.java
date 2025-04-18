@@ -433,13 +433,6 @@ public class GUIListener implements Listener {
             public boolean handleVaultAccess(PlayerInteractEvent event) {
                 return false;
             }
-            // Implement any other abstract methods from IModifier interface here
-            // For example:
-            // @Override
-            // public boolean handleBlockBreak(BlockBreakEvent event) { return false; }
-            // @Override
-            // public boolean handleFishing(PlayerFishEvent event) { return false; }
-            // Add any other methods required by your IModifier interface
         };
     }
 }

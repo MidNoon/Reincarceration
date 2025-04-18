@@ -11,7 +11,6 @@ import org.kif.reincarceration.Reincarceration;
 import org.kif.reincarceration.modifier.core.IModifier;
 import org.kif.reincarceration.modifier.core.ModifierManager;
 import org.kif.reincarceration.modifier.core.ModifierModule;
-import org.kif.reincarceration.util.ItemUtil;
 import org.kif.reincarceration.util.ConsoleUtil;
 import org.kif.reincarceration.permission.PermissionManager;
 

@@ -32,13 +32,11 @@ public class SweetBerryListener implements Listener {
     public void onBerryPicking(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        // Early exit if player is not associated
         boolean isAssociated = permissionManager.isAssociatedWithBaseGroup(player.getUniqueId());
         if (!isAssociated) {
             return;
         }
 
-        // Check if the player is right-clicking a sweet berry bush
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
@@ -49,39 +47,23 @@ public class SweetBerryListener implements Listener {
         }
 
         ConsoleUtil.sendDebug("Reincarcerated player " + player.getName() + " is picking sweet berries");
-
-        // Cancel the default event
         event.setCancelled(true);
-
-        // Manually handle the berry picking
         handleBerryPicking(block, player);
     }
 
     private void handleBerryPicking(Block block, Player player) {
-        // Check if the bush has berries (age 2 or 3)
         if (block.getBlockData() instanceof Ageable) {
             Ageable berryBush = (Ageable) block.getBlockData();
             int age = berryBush.getAge();
 
-            if (age >= 2) { // Mature bush with berries
-                // Reduce age to 1 (picked bush)
+            if (age >= 2) {
                 berryBush.setAge(1);
                 block.setBlockData(berryBush);
-
-                // Determine number of berries to drop (1-3 for age 2, 1-4 for age 3)
                 int berryCount = age == 2 ? random.nextInt(3) + 1 : random.nextInt(4) + 1;
-
-                // Create flagged berries
                 ItemStack berries = new ItemStack(Material.SWEET_BERRIES, berryCount);
                 ItemUtil.addReincarcerationFlag(berries);
-
-                // Drop the berries at the bush location
                 block.getWorld().dropItemNaturally(block.getLocation().add(0.5, 0.5, 0.5), berries);
-
-                // Play the berry picking sound
                 player.playSound(block.getLocation(), Sound.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES, 1.0f, 1.0f);
-
-                // Apply damage to the player as vanilla would (half a heart)
                 player.damage(1.0);
 
                 ConsoleUtil.sendDebug("Dropped " + berryCount + " flagged sweet berries for player: " + player.getName());

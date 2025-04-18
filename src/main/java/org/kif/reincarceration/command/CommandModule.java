@@ -16,15 +16,7 @@ import org.kif.reincarceration.rewards.RewardModule;
 
 import java.util.logging.Level;
 
-/**
- * The CommandModule is responsible for registering and managing all commands for the Reincarceration plugin.
- * It implements the Module interface to integrate with the plugin's modular structure.
- */
 public class CommandModule implements Module {
-    /**
-     * -- GETTER --
-     *  Gets the main plugin instance.
-     */
     @Getter
     private final Reincarceration plugin;
     private final ConfigManager configManager;
@@ -39,9 +31,6 @@ public class CommandModule implements Module {
         this.configManager = plugin.getModuleManager().getConfigManager();
     }
 
-    /**
-     * Enables the CommandModule, registering all commands.
-     */
     @Override
     public void onEnable() {
         try {
@@ -53,17 +42,11 @@ public class CommandModule implements Module {
         }
     }
 
-    /**
-     * Disables the CommandModule.
-     */
     @Override
     public void onDisable() {
         ConsoleUtil.sendSuccess("Command Module disabled");
     }
 
-    /**
-     * Registers all commands for the plugin.
-     */
     private void registerCommands() {
         try {
             CycleModule cycleModule = plugin.getModuleManager().getModule(CycleModule.class);
@@ -91,12 +74,6 @@ public class CommandModule implements Module {
         }
     }
 
-    /**
-     * Registers a single command with the plugin.
-     *
-     * @param name     The name of the command.
-     * @param executor The CommandExecutor for the command.
-     */
     private void registerCommand(String name, org.bukkit.command.CommandExecutor executor) {
         PluginCommand command = plugin.getCommand(name);
         if (command != null) {

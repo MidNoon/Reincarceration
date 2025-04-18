@@ -40,7 +40,6 @@ public class GUIModule implements Module {
                 dataModule.getDataManager(), economyModule.getEconomyManager(), rankModule.getRankManager(),
                 permissionManager, modifierModule.getModifierManager());
 
-//        plugin.getServer().getPluginManager().registerEvents(new GUIListener(plugin, guiManager), plugin);
         ConsoleUtil.sendSuccess("GUI Module enabled");
     }
 
