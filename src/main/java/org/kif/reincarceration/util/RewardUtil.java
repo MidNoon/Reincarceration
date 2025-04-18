@@ -136,7 +136,7 @@ public class RewardUtil {
                 return null;
             }
             if (item.isStamped()) {
-                ItemStackUtil.stampItemStack(customItem.getBackingItemStack(), null);
+                ItemStackUtil.stampItemStack(customItem.getBackingItemStack(), false, null);
             }
             return customItem.getBackingItemStack();
         }
@@ -172,7 +172,7 @@ public class RewardUtil {
         });
 
         if (item.isStamped()) {
-            ItemStackUtil.stampItemStack(itemStack, null);
+            ItemStackUtil.stampItemStack(itemStack, false, null);
         }
 
         return itemStack;
