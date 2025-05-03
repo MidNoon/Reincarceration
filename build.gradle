@@ -55,7 +55,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.18.34'
 
     implementation "co.killionrevival:killioncommons:4.3"
-    implementation "co.killionrevival:curiosities:1.5.3"
+    implementation "co.killionrevival:curiosities:1.6"
+    implementation "co.killionrevival:curiosities:1.6"
     implementation "com.flyerzrule.mc.customtags:customtags:1.8.2"
     implementation "net.luckperms:api:5.4"
     implementation "com.github.drtshock:PlayerVaults:4.2.15"

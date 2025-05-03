@@ -14,6 +14,7 @@ import org.kif.reincarceration.util.RewardUtil;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -41,52 +42,105 @@ public class RewardManager {
     }
 
     public void rewardPlayer(@NotNull final Player player) {
-        synchronized (playersNeedingRewards) {
-            final IModifier modifier = playersNeedingRewards.get(player.getUniqueId());
-            final CycleReward reward = RewardUtil.getCycleRewardForModifier(modifier, plugin);
-            if (reward == null) {
-                ConsoleUtil.sendDebug("No reward configured for " + modifier.getName());
-                return;
-            }
+        try {
+            synchronized (playersNeedingRewards) {
+                final IModifier modifier = playersNeedingRewards.get(player.getUniqueId());
+                if (modifier == null) {
+                    ConsoleUtil.sendDebug("No modifier found for player: " + player.getName());
+                    playersNeedingRewards.remove(player.getUniqueId());
+                    return;
+                }
 
-            if (economyModule != null && (reward.getMoney() == null || reward.getMoney().equals(BigDecimal.ZERO))) {
-                economyModule.getEconomyManager().depositMoney(player, reward.getMoney());
-            }
+                final CycleReward reward = RewardUtil.getCycleRewardForModifier(modifier, plugin);
+                if (reward == null) {
+                    ConsoleUtil.sendDebug("No reward configured for " + modifier.getName());
+                    playersNeedingRewards.remove(player.getUniqueId());
+                    return;
+                }
 
-            for (final String command : reward.getCommands()) {
-                plugin.getServer().dispatchCommand(
-                        plugin.getServer().getConsoleSender(),
-                        command.replace("<player>", player.getName())
-                );
-            }
-            CycleHistory history;
-            try {
-                history = dataModule.getDataManager()
-                                    .getLastCycleHistoryForId(
-                                            player.getUniqueId(),
-                                            modifier.getId()
-                                    );
-            } catch (SQLException e) {
-                history = null;
-                ConsoleUtil.sendError("Could not get cycle history, returning null.");
-            }
+                // Handle money reward
+                try {
+                    if (economyModule != null && reward.getMoney() != null && !reward.getMoney().equals(BigDecimal.ZERO)) {
+                        economyModule.getEconomyManager().depositMoney(player, reward.getMoney());
+                        ConsoleUtil.sendDebug("Awarded " + reward.getMoney() + " to player " + player.getName());
+                    }
+                } catch (Exception e) {
+                    ConsoleUtil.sendError("Error depositing money reward: " + e.getMessage());
+                }
 
-            final List<ItemStack> itemStackList = reward.getItems()
-                                                        .stream()
-                                                        .map(RewardUtil::buildItemStackFromRewardItem)
-                                                        .toList();
+                // Execute reward commands
+                for (final String command : reward.getCommands()) {
+                    try {
+                        String processedCommand = command.replace("<player>", player.getName());
+                        ConsoleUtil.sendDebug("Executing command: " + processedCommand);
+                        plugin.getServer().dispatchCommand(
+                                plugin.getServer().getConsoleSender(),
+                                processedCommand
+                        );
+                    } catch (Exception e) {
+                        ConsoleUtil.sendError("Error executing command: " + e.getMessage());
+                    }
+                }
 
-            // will a player ever not be able to fit items? this is called on respawn
-            itemStackList.forEach(item -> player.getInventory().addItem(item));
-            if (history != null) {
-                player.getInventory().addItem(RewardUtil.getPaintingRewardItem(
-                        modifier,
-                        history.getStartTime(),
-                        history.getEndTime()
-                    )
-                );
+                // Get cycle history
+                CycleHistory history = null;
+                try {
+                    history = dataModule.getDataManager()
+                            .getLastCycleHistoryForId(
+                                    player.getUniqueId(),
+                                    modifier.getId()
+                            );
+                } catch (Exception e) {
+                    ConsoleUtil.sendError("Could not get cycle history: " + e.getMessage());
+                }
+
+                // Process item rewards one by one for more robust error handling
+                for (CycleItem cycleItem : reward.getItems()) {
+                    try {
+                        ItemStack item = RewardUtil.buildItemStackFromRewardItem(cycleItem);
+                        if (item != null) {
+                            HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(item);
+                            if (!leftover.isEmpty()) {
+                                ConsoleUtil.sendDebug("Player inventory full, dropping item on ground");
+                                for (ItemStack drop : leftover.values()) {
+                                    player.getWorld().dropItem(player.getLocation(), drop);
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        ConsoleUtil.sendError("Error creating reward item: " + e.getMessage());
+                    }
+                }
+
+                // Handle painting reward
+                if (history != null) {
+                    try {
+                        ItemStack paintingReward = RewardUtil.getPaintingRewardItem(
+                                modifier,
+                                history.getStartTime(),
+                                history.getEndTime()
+                        );
+                        if (paintingReward != null) {
+                            HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(paintingReward);
+                            if (!leftover.isEmpty()) {
+                                player.getWorld().dropItem(player.getLocation(), leftover.get(0));
+                            }
+                        }
+                    } catch (Exception e) {
+                        ConsoleUtil.sendError("Error creating painting reward: " + e.getMessage());
+                    }
+                }
+
+                playersNeedingRewards.remove(player.getUniqueId());
             }
-            playersNeedingRewards.remove(player.getUniqueId());
+        } catch (Exception e) {
+            ConsoleUtil.sendError("Unhandled error in rewardPlayer: " + e.getMessage());
+            e.printStackTrace();
+
+            // Make sure we don't leave the player in the rewards queue
+            if (player != null) {
+                playersNeedingRewards.remove(player.getUniqueId());
+            }
         }
     }
 
