@@ -311,14 +311,21 @@ public class PermissionManager {
             ConsoleUtil.sendDebug("Completion count group does not exist: " + completionCountGroup);
         }
 
-        // Remove all existing modifier completion groups
-        user.data().clear(node -> node.getKey().startsWith("group.reincarnation_modifier_"));
+        // DO NOT remove existing modifier completion groups
+        // Instead, only add new ones that don't already exist
 
         // Add new modifier completion groups if they exist
         for (String modifierId : completedModifiers) {
             String modifierGroup = "reincarnation_modifier_" + modifierId;
             if (luckPerms.getGroupManager().getGroup(modifierGroup) != null) {
+                // Check if the user already has this group before adding it
+                boolean hasGroup = user.getNodes(NodeType.INHERITANCE).stream()
+                    .anyMatch(node -> node.getKey().equals("group." + modifierGroup));
+
+                if (!hasGroup) {
                 user.data().add(InheritanceNode.builder(modifierGroup).build());
+                    ConsoleUtil.sendDebug("Added modifier group: " + modifierGroup + " for player " + player.getName());
+                }
             } else {
                 ConsoleUtil.sendDebug("Modifier group does not exist: " + modifierGroup);
             }
